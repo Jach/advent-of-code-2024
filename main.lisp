@@ -19,12 +19,12 @@
 (defun transpose (m)
   (apply #'mapcar #'list m))
 
+(defun rows (str)
+  (loop for line in (lines str)
+        collect (mapcar #'parse-integer (cl-ppcre:split "[ ]+" line))))
+
 (defun columns (str)
-  (transpose
-    (loop for line in (lines str)
-          collect
-          (let ((cols (mapcar #'parse-integer (cl-ppcre:split "[ ]+" line))))
-            cols))))
+  (transpose (rows str)))
 
 (defun day1 (&aux input)
   (setf input sample1)
@@ -58,10 +58,6 @@
 1 3 2 4 5
 8 6 4 4 1
 1 3 6 7 9")
-
-(defun rows (str)
-  (loop for line in (lines str)
-        collect (mapcar #'parse-integer (cl-ppcre:split "[ ]+" line))))
 
 (defun level-direction (level1 level2)
   (cond
