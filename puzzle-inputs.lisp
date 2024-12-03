@@ -2007,3 +2007,5 @@
 65 68 70 71 73
 60 63 66 68 71 74 76 79
 ")
+
+(defparameter *day3-input* (uiop:read-file-string (asdf:system-relative-pathname :com.thejach.aoc24 "day3-input")))
