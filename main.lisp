@@ -223,3 +223,122 @@ Basically my part 2 solution was too greedily pop'ing on bad input. That mul(566
 Maybe I'll be lucky with subsequent days and this state machine approach will work out better than regexes in the long run...
 |#
 
+
+;; day 4
+
+(defvar sample4 "MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX")
+
+;(import 'alexandria:if-let)
+
+(defun char-at-row-col (lines r c)
+  (if (< -1 r (length lines))
+      (let ((row (elt lines r)))
+        (if (< -1 c (length row))
+            (elt row c)))))
+
+(defun paths-around-row-col (r c len)
+  "Given a starting row, col pair, give the offsets for each of the 8 directions around it up to len.
+   e.g. if 0,0 and 4, the path to the right will be ((0 0) (0 1) (0 2) (0 3)).
+   There will be 8 such paths."
+
+  (let
+    (
+     (right-c  (1- c))
+     (down-r  (1- r))
+     (left-c  (1+ c))
+     (up-r  (1+ r))
+     (up-right-r  (1+ r))
+     (up-right-c  (1- c))
+     (down-right-r  (1- r))
+     (down-right-c  (1- c))
+     (down-left-r  (1- r))
+     (down-left-c  (1+ c))
+     (up-left-r  (1+ r))
+     (up-left-c  (1+ c))
+     )
+    (list
+      (loop repeat len
+            collect (list r (incf right-c)))
+      (loop repeat len
+            collect (list (incf down-r) c))
+      (loop repeat len
+            collect (list r (decf left-c)))
+      (loop repeat len
+            collect (list (decf up-r) c))
+      (loop repeat len
+            collect (list (decf up-right-r) (incf up-right-c)))
+      (loop repeat len
+            collect (list (incf down-right-r) (incf down-right-c)))
+      (loop repeat len
+            collect (list (incf down-left-r) (decf down-left-c)))
+      (loop repeat len
+            collect (list (decf up-left-r) (decf up-left-c))))))
+
+(coerce (list #\a #\b) 'string)
+(loop for path in (paths-around-row-col 4 4 9)
+      collect (coerce (loop for (row col) in path
+                            for char = (char-at-row-col (lines sample4) row col)
+                            when char
+                            collect char)
+                      'string))
+
+(defun day4-part1 (input &aux (word "XMAS") (word-len (length word)))
+  (let ((lines (lines input))
+        (sum 0))
+    (loop for r from 0 below (length lines)
+          for the-row = (elt lines r)
+          for row-len = (length the-row)
+          do
+          (loop for c from 0 below row-len
+                do
+                (when (eql (elt word 0) (char-at-row-col lines r c))
+                  (dolist (connected-word (loop for path in (paths-around-row-col r c word-len)
+                                                 collect (coerce (loop for (row col) in path
+                                                                       for char = (char-at-row-col lines row col)
+                                                                       when char
+                                                                       collect char)
+                                                                 'string)))
+                    (when (string-equal word connected-word)
+                      (incf sum))))))
+    sum))
+
+
+(day4-part1 sample4)
+(day4-part1 *day4-input*) ; 1 hr 20 min
+
+(defun day4-part2 (input)
+  "strategy: do a search again, but now search for 'A', and check if both diagonals form mas / sam"
+  (let* ((lines (lines input))
+         (line-length (length lines))
+         (mas (coerce "MAS" 'list))
+         (sam (coerce "SAM" 'list))
+         (sum 0))
+    (loop for r from 0 below line-length
+          for the-row = (elt lines r)
+          for row-len = (length the-row)
+          do
+          (loop for c from 0 below row-len
+                do
+                (let ((diag1 (list (char-at-row-col lines (1- r) (1- c))
+                                   (char-at-row-col lines r c)
+                                   (char-at-row-col lines (1+ r) (1+ c))))
+                      (diag2 (list (char-at-row-col lines (1- r) (1+ c))
+                                   (char-at-row-col lines r c)
+                                   (char-at-row-col lines (1+ r) (1- c)))))
+                  (when (and (or (equal mas diag1) (equal sam diag1))
+                             (or (equal mas diag2) (equal sam diag2)))
+                    (incf sum)))))
+    sum))
+
+
+(day4-part2 sample4)
+(day4-part2 *day4-input*) ; 15 mins

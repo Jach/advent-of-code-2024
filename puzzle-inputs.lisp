@@ -2009,3 +2009,4 @@
 ")
 
 (defparameter *day3-input* (uiop:read-file-string (asdf:system-relative-pathname :com.thejach.aoc24 "day3-input")))
+(defparameter *day4-input* (uiop:read-file-string (asdf:system-relative-pathname :com.thejach.aoc24 "day4-input")))
